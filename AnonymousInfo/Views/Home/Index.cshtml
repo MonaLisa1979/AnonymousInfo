@@ -1,0 +1,35 @@
+﻿@model AnonymousInfo.Models.Contact
+
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <title>Anonymous Info</title>
+
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    </head>
+    <body>
+
+        <h3>Анонимный сброс сведений</h3>
+        @ViewBag.msg
+        <form method="post" enctype="multipart/form-data" asp-controller="home" asp-action="send">
+            <table>
+                <tr>
+                    <td>Тема</td>
+                    <td><input type="text" asp-for="Subject" /></td>
+                </tr>
+                <tr>
+                    <td valign="top">Сообщение</td>
+                    <td><textarea asp-for="Content" rows="5" cols="20"></textarea></td>
+                </tr>
+                <tr>
+                    <td>Файлы</td>
+                    <td><input type="file" name="attachments" multiple="multiple" /></td>
+                </tr>
+                <tr>
+                    <td valign="top">&nbsp;</td>
+                    <td><input class="g-recaptcha" type="submit" value="Отправить"></td>
+                </tr>
+            </table>
+        </form>
+    </body>
+</html>
