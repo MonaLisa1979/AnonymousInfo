@@ -27,22 +27,19 @@ namespace AnonymousInfo.Services
         {
             var result = false;
 
-            var googleVerificationUrl = "https://www.google.com/recaptcha/api/siteverify";
-
             try
             {
                 using var client = new HttpClient();
 
-                var response = await client.PostAsync($"{googleVerificationUrl}?secret={captchaSettings.ServerKey}&response={token}", null);
+                var response = await client.PostAsync($"{captchaSettings.GoogleVerificationUrl}?secret={captchaSettings.ServerKey}&response={token}", null);
                 var jsonString = await response.Content.ReadAsStringAsync();
                 var captchaVerfication = JsonConvert.DeserializeObject<CaptchaVerificationResponse>(jsonString);
 
-                result = captchaVerfication.success;
+                result = captchaVerfication.Success;
             }
-            catch (Exception e)
+            catch (Exception exc)
             {
-                // fail gracefully, but log
-                logger.LogError("Failed to process captcha validation", e);
+                logger.LogError("Failed to process captcha validation", exc);
             }
 
             return result;

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Mail;
+using System.Threading.Tasks;
 
 namespace AnonymousInfo.Services
 {
@@ -49,7 +50,7 @@ namespace AnonymousInfo.Services
                     }
                 }
 
-                smtpClient.Send(mailMessage);
+                smtpClient.SendAsync(mailMessage, null);
 
                 return true;
             }

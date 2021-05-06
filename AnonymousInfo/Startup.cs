@@ -22,7 +22,9 @@ namespace AnonymousInfo
             services.AddControllersWithViews();
 
             services.AddOptions<GmailSettings>().BindConfiguration("Gmail");
+            services.AddOptions<CaptchaSettings>().BindConfiguration("Captcha");
             services.AddTransient<IMailService, MailService>();
+            services.AddTransient<CaptchaVerificationService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
