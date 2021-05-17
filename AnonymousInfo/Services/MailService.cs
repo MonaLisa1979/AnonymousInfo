@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -39,6 +40,7 @@ namespace AnonymousInfo.Services
                 {
                     Subject = subject,
                     Body = content,
+                    IsBodyHtml = false
                 };
 
                 if (attachments != null)
@@ -50,15 +52,26 @@ namespace AnonymousInfo.Services
                     }
                 }
 
-                smtpClient.SendAsync(mailMessage, null);
+                var task = smtpClient.SendMailAsync(mailMessage);
 
-                return true;
+                task.Wait();
+                return task.IsCompletedSuccessfully;
             }
             catch (Exception exc)
             {
                 // Check if external services enabled https://www.google.com/settings/security/lesssecureapps
                 this.logger.LogError(exc, $"Error occured while sending email. {exc.Message}");
                 return false;
+            }
+            finally
+            {
+                if (attachments != null)
+                {
+                    foreach (var attachment in attachments)
+                    {
+                        attachment.Value.DisposeAsync();
+                    }
+                }
             }
         }
     }

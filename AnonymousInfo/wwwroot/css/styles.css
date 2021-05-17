@@ -1,0 +1,8 @@
+﻿form#email-form {
+    max-width: 800px;
+    margin: auto;
+}
+
+.form-footer{
+    text-align: right;
+}

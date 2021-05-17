@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -14,6 +13,7 @@ namespace AnonymousInfo.Controllers
     [Route("home")]
     public class HomeController : Controller
     {
+        private const long fileSizeLimit = 25 * 1024 * 1024;
         private readonly GmailSettings gmailSettings;
         private readonly CaptchaSettings captchaSettings;
         private readonly IMailService mailService;
@@ -51,7 +51,7 @@ namespace AnonymousInfo.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.msg = "Fields are empty";
+                ViewBag.ErrorMsg = "Напиши мне что-нибудь. Плохо, когда поля пустые :-(";
                 return View("Index", contact);
             }
 
@@ -60,7 +60,7 @@ namespace AnonymousInfo.Controllers
 
             if (!requestIsValid)
             {
-                ViewBag.msg = "Capcha is not valid";
+                ViewBag.ErrorMsg = "Ты пытаешся нас сломать или это гугл приуныл?";
                 return View("Index", contact);
             }
 
@@ -68,25 +68,37 @@ namespace AnonymousInfo.Controllers
 
             if (attachments != null && attachments.Length > 0)
             {
+                long totalSize = 0;
                 foreach (IFormFile attachment in attachments)
                 {
                     var filename = Path.GetFileName(attachment.FileName);
                     var stream = attachment.OpenReadStream();
+
+                    totalSize += stream.Length;
+
+                    if (totalSize > fileSizeLimit)
+                    {
+                        ViewBag.ErrorMsg = "Файл слишком большой";
+                        return View("Index", contact);
+                    }
+
                     files[filename] = stream;
                 }
             }
-
+                
             var email = this.gmailSettings.Username;
 
             if (this.mailService.Send(email, email, contact.Subject, contact.Content, files))
             {
-                ViewBag.msg = "Sent Mail Successfully";
+                ModelState.Clear();
+                ViewBag.SuccessMsg = "Вялікі дзякуй!";
+                ViewBag.ErrorMsg = string.Empty;
             }
             else
             {
-                ViewBag.msg = "Failed";
+                ViewBag.ErrorMsg = "Упс.. Что то пошло не так. Мы уже разбираемся в этом. Попробуй чуть позже";
             }
-            return View("Index", new InfoFormViewModel());
+            return View("Index", new InfoFormViewModel() { ClientKey = this.captchaSettings.ClientKey });
         }
     }
 }
